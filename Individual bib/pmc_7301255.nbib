@@ -1,0 +1,89 @@
+PMID- 32490841
+OWN - NLM
+STAT- PubMed-not-MEDLINE
+LR  - 20200928
+IS  - 2291-9694 (Print)
+IS  - 2291-9694 (Electronic)
+VI  - 8
+IP  - 6
+DP  - 2020 Jun 3
+TI  - Predicting Onset of Dementia Using Clinical Notes and Machine Learning: 
+      Case-Control Study.
+PG  - e17819
+LID - 10.2196/17819 [doi]
+LID - e17819
+AB  - BACKGROUND: Clinical trials need efficient tools to assist in recruiting patients 
+      at risk of Alzheimer disease and related dementias (ADRD). Early detection can 
+      also assist patients with financial planning for long-term care. Clinical notes 
+      are an important, underutilized source of information in machine learning models 
+      because of the cost of collection and complexity of analysis. OBJECTIVE: This 
+      study aimed to investigate the use of deidentified clinical notes from multiple 
+      hospital systems collected over 10 years to augment retrospective machine 
+      learning models of the risk of developing ADRD. METHODS: We used 2 years of data 
+      to predict the future outcome of ADRD onset. Clinical notes are provided in a 
+      deidentified format with specific terms and sentiments. Terms in clinical notes 
+      are embedded into a 100-dimensional vector space to identify clusters of related 
+      terms and abbreviations that differ across hospital systems and individual 
+      clinicians. RESULTS: When using clinical notes, the area under the curve (AUC) 
+      improved from 0.85 to 0.94, and positive predictive value (PPV) increased from 
+      45.07% (25,245/56,018) to 68.32% (14,153/20,717) in the model at disease onset. 
+      Models with clinical notes improved in both AUC and PPV in years 3-6 when notes' 
+      volume was largest; results are mixed in years 7 and 8 with the smallest cohorts. 
+      CONCLUSIONS: Although clinical notes helped in the short term, the presence of 
+      ADRD symptomatic terms years earlier than onset adds evidence to other studies 
+      that clinicians undercode diagnoses of ADRD. De-identified clinical notes 
+      increase the accuracy of risk models. Clinical notes collected across multiple 
+      hospital systems via natural language processing can be merged using 
+      postprocessing techniques to aid model accuracy.
+CI  - ©Christopher A Hane, Vijay S Nori, William H Crown, Darshak M Sanghavi, Paul 
+      Bleicher. Originally published in JMIR Medical Informatics 
+      (http://medinform.jmir.org), 03.06.2020.
+FAU - Hane, Christopher A
+AU  - Hane CA
+AUID- ORCID: 0000-0002-2480-4236
+AD  - OptumLabs, Optum, Cambridge, MA, United States.
+FAU - Nori, Vijay S
+AU  - Nori VS
+AUID- ORCID: 0000-0002-3979-7577
+AD  - OptumLabs, Optum, Cambridge, MA, United States.
+FAU - Crown, William H
+AU  - Crown WH
+AUID- ORCID: 0000-0002-8822-2737
+AD  - OptumLabs, Optum, Cambridge, MA, United States.
+FAU - Sanghavi, Darshak M
+AU  - Sanghavi DM
+AUID- ORCID: 0000-0003-3713-171X
+AD  - OptumLabs, Optum, Cambridge, MA, United States.
+FAU - Bleicher, Paul
+AU  - Bleicher P
+AUID- ORCID: 0000-0002-3005-0864
+AD  - OptumLabs, Optum, Cambridge, MA, United States.
+LA  - eng
+PT  - Journal Article
+DEP - 20200603
+PL  - Canada
+TA  - JMIR Med Inform
+JT  - JMIR medical informatics
+JID - 101645109
+PMC - PMC7301255
+OTO - NOTNLM
+OT  - Alzheimer disease
+OT  - dementia
+OT  - health information interoperability
+OT  - health information systems
+OT  - machine learning
+OT  - natural language processing
+COIS- Conflicts of Interest: None declared.
+EDAT- 2020/06/04 06:00
+MHDA- 2020/06/04 06:01
+CRDT- 2020/06/04 06:00
+PHST- 2020/01/15 00:00 [received]
+PHST- 2020/03/25 00:00 [accepted]
+PHST- 2020/02/24 00:00 [revised]
+PHST- 2020/06/04 06:00 [entrez]
+PHST- 2020/06/04 06:00 [pubmed]
+PHST- 2020/06/04 06:01 [medline]
+AID - v8i6e17819 [pii]
+AID - 10.2196/17819 [doi]
+PST - epublish
+SO  - JMIR Med Inform. 2020 Jun 3;8(6):e17819. doi: 10.2196/17819.

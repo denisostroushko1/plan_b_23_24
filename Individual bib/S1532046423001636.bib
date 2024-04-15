@@ -1,0 +1,20 @@
+@article{MAO2023104442,
+title = {AD-BERT: Using pre-trained language model to predict the progression from mild cognitive impairment to Alzheimer's disease},
+journal = {Journal of Biomedical Informatics},
+volume = {144},
+pages = {104442},
+year = {2023},
+issn = {1532-0464},
+doi = {https://doi.org/10.1016/j.jbi.2023.104442},
+url = {https://www.sciencedirect.com/science/article/pii/S1532046423001636},
+author = {Chengsheng Mao and Jie Xu and Luke Rasmussen and Yikuan Li and Prakash Adekkanattu and Jennifer Pacheco and Borna Bonakdarpour and Robert Vassar and Li Shen and Guoqian Jiang and Fei Wang and Jyotishman Pathak and Yuan Luo},
+keywords = {Alzheimer's disease, Mild cognitive impairment, Pre-trained language model, Electronic health records},
+abstract = {Objective
+We develop a deep learning framework based on the pre-trained Bidirectional Encoder Representations from Transformers (BERT) model using unstructured clinical notes from electronic health records (EHRs) to predict the risk of disease progression from Mild Cognitive Impairment (MCI) to Alzheimer's Disease (AD).
+Methods
+We identified 3657 patients diagnosed with MCI together with their progress notes from Northwestern Medicine Enterprise Data Warehouse (NMEDW) between 2000 and 2020. The progress notes no later than the first MCI diagnosis were used for the prediction. We first preprocessed the notes by deidentification, cleaning and splitting into sections, and then pre-trained a BERT model for AD (named AD-BERT) based on the publicly available Bio+Clinical BERT on the preprocessed notes. All sections of a patient were embedded into a vector representation by AD-BERT and then combined by global MaxPooling and a fully connected network to compute the probability of MCI-to-AD progression. For validation, we conducted a similar set of experiments on 2563 MCI patients identified at Weill Cornell Medicine (WCM) during the same timeframe.
+Results
+Compared with the 7 baseline models, the AD-BERT model achieved the best performance on both datasets, with Area Under receiver operating characteristic Curve (AUC) of 0.849 and F1 score of 0.440 on NMEDW dataset, and AUC of 0.883 and F1 score of 0.680 on WCM dataset.
+Conclusion
+The use of EHRs for AD-related research is promising, and AD-BERT shows superior predictive performance in modeling MCI-to-AD progression prediction. Our study demonstrates the utility of pre-trained language models and clinical notes in predicting MCI-to-AD progression, which could have important implications for improving early detection and intervention for AD.}
+}
