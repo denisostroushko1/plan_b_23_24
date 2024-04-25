@@ -1,0 +1,512 @@
+---
+title: "Evaluation of cohort construction methods for MCI to AD progression from EHR data. Discussion and Reflections"
+author: "Denis Ostroushko"
+format: 
+  pdf:
+    linestretch: 1.5
+    documentclass: article 
+    geometry: 
+    - a4paper 
+    - top=20mm
+    - left=20mm 
+execute: 
+  echo: false
+  message: false 
+  warning: false 
+bibliography: reference.bib
+header-includes: \usepackage{float}
+---
+
+
+# Introduction 
+
+```{r }
+library(tidyverse)
+library(kableExtra)
+```
+
+### Background 
+
+Alzheimer's disease (AD) stands as a prevailing public health challenge, with an escalating impact on global societies. Characterized by progressive cognitive decline, AD places an immense burden on individuals, families, and healthcare systems. Mild Cognitive Impairment (MCI), often considered an intermediate stage between normal aging and AD, has become a focal point for researchers seeking to understand the early stages of neurodegeneration. The ability to accurately identify and track the progression from MCI to AD is pivotal for developing timely interventions and personalized treatment strategies.
+
+According to @ad_ph dementia affects around 50 million people worldwide and projections suggest this number could exceed 150 million by 2050, especially in low- and middle-income countries where prevalence is expected to rise significantly. Diagnosis of AD relies on a comprehensive assessment encompassing patient history, clinical symptoms, and various assessments including imaging and blood tests. Earlier diagnosis is crucial to facilitate timely interventions such as symptomatic therapies and lifestyle modifications that may slow disease progression. Challenges to AD diagnosis and management vary by region, influenced by socioeconomic factors and healthcare disparities. A recent international conference highlighted common barriers faced in Brazil, China, Nigeria, Spain, and Sweden, emphasizing the importance of education, outreach, and biomarker utilization in improving AD care globally. The development of accessible disease-modifying treatments like aducanumab remains a significant focus, although global availability and approval vary, underscoring the complex landscape of AD diagnosis, treatment, and prevention.
+
+To find a new source of data to aid AD management from a public health point of view, in recent years, the advent of electronic health records (EHRs) has revolutionized the landscape of medical research, offering a wealth of longitudinal data that can illuminate patterns, risk factors, and potential predictors associated with the transition from MCI to AD. The integration of EHRs into scientific inquiry provides a unique opportunity to delve into the intricacies of disease progression, drawing upon real-world patient data in diverse clinical settings.
+
+This paper aims to explore and critically examine the methodologies employed in studying the progression from MCI to AD using EHRs. By leveraging the wealth of information encapsulated in electronic health records, researchers gain access to comprehensive patient histories, enabling a nuanced understanding of the multifaceted factors contributing to the evolution of cognitive impairment. The utilization of EHRs not only offers a large-scale and diverse dataset but also facilitates the identification of risk factors and temporal trends that may inform the development of predictive models for early AD detection. Researchers acknowledge key challenges in creating the data for analysis using real-world electronic health records (EHRs). 
+
+Although EHRs contain extensive longitudinal patient information, the data is inherently messy and heterogeneous across healthcare systems, posing obstacles for analysis and the ability to generalize results of a given analysis to broader applications.  In particular, the diagnosis codes used to identify onset of MCI and early stages of AD can be inconsistent or incomplete. Inconsistency mainly refers to the choice of ICD diagnosis used on the record of patient's visit.
+
+ICD (International Classification of Diseases) codes are a standardized system used worldwide to classify and code diagnoses, symptoms, and procedures in medical settings. ICD-9 (9th revision) and ICD-10 (10th revision) codes specifically categorize different diseases and health conditions, aiding in data collection, billing, and epidemiological research. ICD-9 was primarily used until ICD-10 was introduced to provide a more detailed and comprehensive classification system. ICD-10 codes offer greater specificity, enabling more accurate documentation of diseases and conditions.
+
+The diagnosis of MCI using ICD codes allows clinicians to identify individuals experiencing cognitive decline beyond normal aging but not meeting the criteria for dementia. This coding is valuable for tracking and studying the progression of MCI to AD. On the other hand, the assignment of an ICD code describing "Unspecified Mental Disorder" might occur when symptoms are not specific enough to assign a more definitive diagnosis or when a detailed evaluation is pending. This code could be used in situations where further assessment is needed to determine the exact nature of the mental health condition, reflecting the complexity and subtlety often encountered in clinical practice. In the context of progressive cognitive decline, using precise ICD codes becomes crucial for accurately capturing disease progression and facilitating research on MCI and AD within EHR datasets.
+
+The two options pose major implications both for the definition that describes a population, and to the results of statistical analyses. Incompleteness refers to the fact that a given person might have a condition occur, but diagnosis is not recorded in the EHR, when the person does not return to a given health system and gets diagnosed elsewhere, or comes in for an unrelated reason, and the diagnosis is not recorded because a patient does not bring it up, or share symptoms that may be indicative of MCI presence. 
+
+Despite these challenges, @ZHANG201748 demonstrate that the utilization of big data is pivotal in advancing research on Alzheimer's disease (AD), primarily due to challenges in patient recruitment, retention, and the time and cost constraints associated with traditional clinical research methods. Analyzing 38 studies, they identified seven key research areas, including diagnosing AD or mild cognitive impairment (MCI), predicting MCI to AD progression, stratifying risks for AD, mining literature for knowledge discovery, predicting AD progression, describing clinical care for individuals with AD, and understanding the relationship between cognition and AD.
+
+Previous studies characterizing the transition from MCI to AD using EHR have used a wide variety of different ways of identifying individuals' cognitive status, especially when capturing presence of MCI. For example, @Aguilar2023 defined Alzheimer's disease (AD) and mild cognitive impairment (MCI) using clinical notes from the United States Veterans Affairs Healthcare System (VAHS) electronic health records (EHR). For MCI, the keywords "MCI" and "mild cognitive impairment" were selected, and for AD, the keyword "Alz$*$" was used. Diagnostic codes related to cognitive impairment were also considered, such as ICD-9-CM '331.83' and ICD-10-CM 'G31.84' for MCI, and ICD-9-CM '331.0' and ICD-10-CM 'G30$*$' for AD. Veterans had to be at least 50 years old to enter the study cohort.
+
+@Mattke2023 used a Medicare Advantage population with an age cutoff of 65 years to construct their sample. 
+Similar to the previous study, they used ICD9 and ICD10 diagnoses to get key identifying variables. However, 
+authors identified the diagnosis based on ICD-10-CM code G31.84 (mild cognitive impairment of uncertain or unknown etiology) and the ICD-9-CM code 331.83 (mild cognitive impairment). Similarly, for ADRD they required two claims on separate days for the diagnosis of MCI. This approach poses less trust in the consistency of EHR records and introduces more criteria to make the sample more robust to false findings, in our opinion. 
+
+@Xu2023 used longitudinal EHR records for identifying outcome-oriented progression pathways from MCI to AD. In their study, AD identification is based on ICD codes, specifically ICD 9 codes 331.0 and ICD 10 codes G30.*, excluding those with AD diagnosis before MCI. Similar to previous studies, MCI diagnosis is based on ICD codes, including ICD 9 codes 331.83 and 294.9, and ICD 10 codes G31.84 and F09. However, criteria include at least one year of data before and after the MCI onset, and a conversion time to AD of more than half a year. It appears that the authors of this study wanted
+to make sure that the an event of interest was observed relatively early to a potential time of censoring. 
+
+
+### Motivation 
+
+The three examples above highlight the varied methods used in crafting data-based definitions for clinical diagnoses of AD and MCI from EHR data. However, as the availability of EHR data increases and interest grows in developing models within these systems for monitoring healthcare-covered populations, it's crucial to anticipate potential disparities when applying published definitions and data collection workflows to EHRs different from those for which the protocols were developed. Moreover, understanding the data's sensitivity to varying cohort definitions applied to the same pooled data from the same EHR is essential.
+
+Our study aims to apply examples and generalizations of commonly cited rules and methods to  define MCI and AD using ICD codes in the EHR data. We seek to assess the implications of restructuring criteria on sample size, overall statistics, and the degree to which the represented sample from a given population aligns with commonly accepted statistics regarding the progression to AD from MCI. Additionally, we aim to provide recommendations regarding the validity of each cohort and the type of statistical learning task for which each cohort is most applicable.
+
+For these tasks, a set of decisions need to be made to create key identifying variables. As such, recent studies always show steps of developing robust data pipelines relevant to MCI and AD progression, but different analyses have massively varying flows and intermediate steps. This encompasses mapping diagnosis codes over time, extracting cognitive assessment scores, reconciling discrepancies in demographic information, and handling missing data. Additional work has centered on novel feature engineering and advanced natural language processing of clinical notes to augment more structured symptoms data available. By confronting the underlying complexity of real-world health data, predictive models applied to EHRs can become better equipped to uncover novel predictors and trajectories associated with progression from MCI to AD. However, barriers persist due to inherent variability across patients and care settings encapsulated in these records. Ongoing research on representation learning methods that can integrate heterogeneous data sources offers promise in this emerging area. Variation of all mentioned factors results in different cohort definitions. 
+
+# Methods 
+
+### Data Collection 
+Data for this study originated from a separate investigation focused on examining the relationship between non-pharmaceutical interventions and the progression of mild cognitive impairment (MCI) and Alzheimer's disease and related dementia (MC-ADRD). This issue emerged during the preliminary analysis of raw electronic health record (EHR) data obtained from the Fairview Health System Data Warehouse. The dataset comprised patient visits where International Classification of Diseases (ICD) diagnoses for MCI, Alzheimer's disease (AD), or Unspecified Mental Disorder (UMD) were documented. Throughout this study, we use "UMD" as an abbreviation for Unspecified Mental Disorder.
+
+Diagnostic information was extracted and organized from EHRs using ICD codes, specifically transitioning from ICD-9 to ICD-10 systems for greater detail. These codes allow for systematic classification of diseases and medical procedures, facilitating the identification of specific health events like MCI and AD within extensive EHR datasets. Patient records spanned from 2004 to 2020, encompassing all visits to maximize observation time and improve time-to-event estimates related to AD progression.
+Primary data extraction included visits with diagnoses of AD, other dementia-related conditions, MCI, or UMD. Refer to @tbl-diags-used for a list of diagnosis codes used. Filtering criteria were applied uniformly across all cohorts, with further restrictions on AD diagnoses (accepting only ICD codes 'G30*' and '331') to ensure a homogeneous outcome group. Patients with only one UMD diagnosis, typically younger adults, were excluded due to the age-related nature of dementia and Alzheimer's disease.
+
+The raw data was processed to construct a timeline of events using EHR data, with a focus on identifying the anchor event—the first observation of MCI—as the starting point for tracking time until progression. However, not all patients progressing to AD had a recorded anchor event due to potential factors like not returning for visits or having diagnoses in different health system databases.
+To address this censoring, the last available visit in the EHR was used as the censoring time. For instance, if a patient had an AD diagnosis 400 days after the anchor MCI event and the last observation in the Fairview EHR was at 600 days, the event of interest occurred before a potential censoring time point. In contrast, for another patient, if the last visit observed was at 90 days, this would censor the observation of an AD diagnosis.
+
+The resulting dataset consisted of one row per patient, including baseline characteristics, count of diagnoses during the observation period, and crucially, time until progression or censoring.
+
+### Cohort Definitions 
+Upon reviewing relevant literature focusing on EHR, healthcare claims, and other digital health records, we identified commonly employed criteria for constructing cohorts or study populations to develop predictive and statistical models. To establish cohorts suitable for various statistical learning and inference tasks, we iteratively applied restriction criteria to identify populations of interest for studying progression rates from MCI to AD. We examined typical criteria used to pinpoint populations at risk of MCI to AD progression and implemented these criteria using data from the Fairview Data Warehouse. 
+
+Additionally, @fig-timelines  provides examples of temporal patterns that can be observed in EHR data collected for this analysis. Some examples represent an observation of a single diagnosis in the EHR, while most present a sequence of diagnoses. X axis represents a general flow of time and does not posses a scale. @tbl-crosses summarizes presence of each pattern in respective cohorts considered. You may notice that as we impose more restrictive criteria, subsequent cohorts contain less examples of temporal sequences. 
+
+Before defining considered cohorts, it is important to clarify the definition of "MCI" diagnosis in this context, which encompasses either MCI or Unspecified Mental Disorder Diagnosis to identify anchoring events initiating the count of time from the occurrence or suspected occurrence of MCI. @bradfield2023mild discussed  subjective cognitive decline reported by the patient, caregiver, or clinician, alongside objective cognitive impairment and preserved daily living activities. Diagnostic criteria for MCI in various neurodegenerative diseases like Alzheimer's, Parkinson's, and vascular cognitive impairment differ slightly, particularly in defining subjective decline based on memory impairment or any cognitive domain. Objective cognitive impairment thresholds also vary among criteria sets. MCI subtypes, categorized by memory impairment and impairment in other cognitive domains, offer refined classification. Post-diagnosis counseling emphasizes social and legal implications and strategies to reduce dementia risk. MCI serves as a valuable tool for understanding disease progression, identifying those at risk of dementia, and targeting potential treatments within neurodegenerative disorders like Alzheimer's.
+Due to these complexities and varying degree of subjectivity, it is common to use both MCI and UMD diagnoses to capture onset MCI using EHR data. 
+
+We can think of  unspecified mental disorder of unknown origin as individuals who potentially have MCI. In our study we treat UMD diagnosis as MCI for the purpose of finding the anchor event—the earliest time we suspect MCI has occurred. We may consider UMD and MCI as varying degrees of MCI severity, such as Early and Late MCI diagnoses. 
+
+The stepwise process undertaken to generate six candidate cohorts, each representing distinct subsets of the population, is detailed in @fig-flowchart.
+**Cohort 1** comprises a subset of patients from the original dataset, excluding those with records solely indicating Alzheimer's Disease (AD), as it's crucial to identify the anchor event of MCI (either MCI or UMD) for progression rate analysis. This cohort consisted of 10,835 patients, each with at least one record of MCI or MCI plus AD diagnoses. Example 1 in @fig-timelines illustrates a single observation of an AD diagnosis, and patients with such patterns are removed. 
+
+**Cohort 2** is derived from Cohort 1 by further filtering out patients with other dementia-related conditions. Given our study's focus on the progression from MCI to Alzheimer's Disease specifically, patients with different types of dementia were deemed outside our scope of interest and thus excluded from candidate cohorts.
+
+**Cohort 3** resulted from data cleaning, where cases were identified where AD diagnosis occurred before MCI on a patient's timeline. Such occurrences, where the anchor event precedes the outcome event, lack meaningful interpretation for our analysis and were therefore removed from candidate cohorts. This challenge illustrates typical issues encountered when working with EHR data. Examples 2 and 3 in @fig-timelines show potential cases where such data can occur. Example 2 specifically demonstrates that in some relatively rare cases an AD diagnosis can be observed between two MCI diagnoses. 
+
+At this point, we define three cohorts for evaluation, labeled as "Cohort A", "Cohort B", and "Cohort C". 
+**Cohort A** is constructed by imposing a filtering criterion that all individuals at the date of their first MCI or Unspecified diagnosis are at least 50 years old. This age restriction, common in the literature, ensures relevance. Additionally, considering adults below 50 would likely include patients with issues unrelated to potential AD occurrence in the near future.
+Cutoff of age at 50 years is a commonly used criteria in the literature. For example, @morris2012revised limited age at minimum of 50 years old when evaluating the potential impact of revised criteria for mild cognitive impairment (MCI), developed by a Work group sponsored by the National Institute on Aging and the Alzheimer’s Association, on the diagnosis of very mild and mild Alzheimer disease (AD) dementia.  
+Another study by @li2023age  investigated the association between MCI and comorbidities of ADRD, and examined the predictive potential of these comorbidities for MCI risk determination using a machine learning algorithm. They also used an edibility cutoff at 50 years of age. 
+Another study using 50 years of age as a qualifying criteria was @Aguilar2023, which we discussed earlier. 
+While no paper directly cites the reason for this age, it should be related to the fact that presence of MCI or AD, and progression events are strongly linked to age. 
+
+**Cohort B** is derived from Cohort A by restricting the timeline of MCI diagnoses before potential progression. For those not progressing to AD, meaning they have at least two MCI diagnoses, we require the time difference between the first and last MCI diagnoses to be at least 50 days apart. This adjustment, similar to @criteria31days, extends the time span to 50 days, selecting patients seen on multiple occasions with confirmed or consistent MCI diagnoses and filtering out sporadic cases. Example 9 would be exuded under these criteria, as indicated by close location of MCI diagnoses on the timeline. 
+
+**Cohort C** is obtained by applying the criterion of at least a 50-day time lapse between the first and last MCI diagnoses to all patients in the cohort. This restriction reduces sample size and the number of AD events but focuses on patients with confirmed, consistent MCI diagnoses preceding a possible progression to AD. This criteria removes temporal patterns such as Example 5 and Example 6 @fig-timelines, showing a singular 'MCI' diagnosis.
+
+For patients with an AD diagnosis event, we do not apply this criterion to include as many people with AD diagnosis as possible for potential study and predictive modeling purposes, aiming to maximize data for individuals with a desired outcome variable and compare results to Cohorts A and C.
+
+
+```{r graph with patterns examples}
+#| label: fig-timelines 
+#| fig-cap: "Examples of Temporal Patterns Observed in EHR"
+#| fig-height: 10
+#| fig-width: 6
+
+plot_df <- 
+  data.frame(
+    
+    y = 
+      c(1,
+        2,2,2, 
+        3,3, 
+        4, 
+        5, 
+        6, 6, 
+        7, 7, 
+        8, 8, 
+        9, 9, 9, 
+        10, 10, 10), 
+    x = 
+      c(0.5, 
+        0.25, 0.5, 0.6, 
+        0.3, 0.75, 
+        0.4, 
+        0.2, 
+        0.1, 0.7, 
+        0.2, 0.55, 
+        0.1, 0.3, 
+        0.2, 0.3, 0.83, 
+        0.34, 0.7, 0.81), 
+    
+    ex = c(
+      "Ex. 1",
+      "Ex. 2", "Ex. 2", "Ex. 2", 
+      "Ex. 3", "Ex. 3", 
+      "Ex. 4", 
+      "Ex. 5", 
+      "Ex. 6", "Ex. 6", 
+      "Ex. 7", "Ex. 7", 
+      "Ex. 8", "Ex. 8",
+      "Ex. 9", "Ex. 9", "Ex. 9", 
+      "Ex. 10", "Ex. 10", "Ex. 10" 
+    ), 
+    
+    type = c(
+      "AD",  # no where  ||1
+      "MCI", "AD", "MCI",  # in 1 only  ||2
+      "AD", "UMD",  # # in 1 only  ||3
+      "MCI",  # in 2 only  ||4
+      "UMD",  # in 2 only  ||5
+      
+      "MCI", "AD",  # in 4  ||6
+      "UMD", "AD",  # in 4  || 7
+      "MCI", "MCI",  # in 5,  ||8
+      "UMD", "MCI", "AD", # in 5  || 9
+      "MCI", "UMD", "AD" # in 5  || 10
+    )
+  )
+
+ggplot(data = plot_df, 
+       aes(x = x, y= y, group = ex, color = ex)) + 
+  theme_classic() + 
+  geom_point(aes(shape = type, size = 2)) + 
+  geom_line() + 
+  
+  scale_y_continuous(breaks = 1:10, labels = paste0("Ex. ", 1:10)) + 
+  scale_x_continuous(labels = NULL, breaks = NULL) + 
+  
+  labs(x = "Time", y = "", shape = "Diagnosis") + 
+  
+   guides(
+    size = "none",  # Remove legend for size
+    color = "none"  # Remove legend for shape
+  )
+
+```
+
+```{r }
+#| label: tbl-crosses
+#| tbl-cap: "Allocation of Temporal Examples into Cohorts"
+
+
+data.frame(
+  names = paste0("Ex. ", 1:10), 
+  coh1 = c(" ", rep("X", 9)), 
+  coh2 = c(" "," "," ", rep("X", 7)), 
+  coh3 = c(" "," "," "," "," ", rep("X", 5)), 
+  coh4 = c(" "," "," "," "," ", 
+           "X", "X", "X", " ", "X" ), 
+  coh5 = c(" "," "," ","X"," ",
+           "X", "X", " ", " ", "X"),
+  coh6 = c(rep(" ", 7), "X", " ", "X")
+) %>% 
+  kable(
+    col.names = c(" ", "Cohort 1", "Cohort 2", "Cohort 3", "Cohort A", "Cohort B", "Cohort C"), 
+    booktabs = T
+  ) 
+
+```
+
+```{r}
+#| label: fig-flowchart
+#| fig-cap: "Flow of data collection"
+#| fig-width: 14
+#| fig-height: 20
+
+
+knitr::include_graphics("flowchart.png")
+
+```
+
+### Statsitical Methods 
+
+We summarized the study populations of Cohorts A, B, and C using summary statistics to assess unadjusted differences between these cohorts. We presented averages and standard deviations for continuous and count variables, along with estimated progression rates for each cohort without accounting for censoring. Additionally, we reported counts and estimated the percentage of total cases within each cohort for specific categorical variable levels.
+
+Visual tools were utilized to compare distributions of main prognostic variables across the three cohorts. We presented histograms of age at the anchor diagnosis event within each cohort, stratifying the distribution by the type of anchor event. These distributions were evaluated visually to confirm the presence of an interaction effect between age and anchor event type, justifying the inclusion of this interaction term in the Cox Proportional Hazard Regression Model.
+
+Exploratory data analysis was conducted using Kaplan-Meier Survival curves to analyze the time-to-event outcome variable. We compared overall progression rates over the observational period for the three cohorts and further stratified the time-to-event summaries by the type of anchor diagnosis to understand the relationship between the initial MCI diagnosis type and the time-to-event. These analyses justified the inclusion of the type of anchor event as a predictor in the Cox Proportional Hazard Regression Model.
+
+To investigate the effects of age and initial diagnosis status on the progression from MCI to Alzheimer's Disease (AD), we employed the Cox Proportional Hazards Regression Model. This semi-parametric approach models the relationship between predictors and the hazard rate, quantifying the instantaneous risk of experiencing the event of interest at a given time point.
+
+The Cox model offers a robust framework for analyzing time-to-event data, such as the transition from MCI to AD in our study. It allows us to estimate hazard ratios associated with predictor variables while accounting for censored observations, which commonly occur in longitudinal studies where not all individuals experience the event during the observation period.
+
+By applying the Cox Proportional Hazards model to Cohorts A, B, and C, we aimed to examine how applying the same statistical procedure to distinct populations can impact findings. Comparing the model estimates for age and type of anchor diagnosis across cohorts enabled us to assess inherent differences between these populations and understand how such differences may influence analysis results.
+
+# Results 
+
+### Impact of Filtering Criteria on Available Patient Count
+
+@fig-flowchart illustrates the impact of filtering criteria on the available patient count. Increasingly stringent criteria reduce the sample size; however, not all method-described restrictions lead to similar reductions in patient count. The most substantial decrease of 9,286 patients (-53%) from the initial 20,121 occurs when excluding those with only AD diagnosis or multiple AD diagnoses. The absence of MCI observations preceding AD in nearly half of the patients within the EHR presents a significant limitation, partially discussed in subsequent sections.
+
+Furthermore, removing patients with a singular MCI diagnosis results in another notable reduction of 3,528 patients (-35%), addressed within the discussion. Cumulatively, these exclusions total 12,814 patients due to anchor event absence or sporadic occurrences, which significantly limits the utility of EHR data for developing statistical models and applying them in clinical decision-making and treatment strategies.
+
+Moreover, a considerable number of patients with at least two MCI diagnoses exhibit a time span of less than 50 days between diagnoses. Specifically, among 5,711 patients aged over 50, 2,904 have two diagnoses separated by less than 50 days, leading to a further 50% reduction in available sample size.
+
+Analysis of the available sample reduction also indicates that issues related to data integrity are minimal but present in the EHR data, which is not surprising. During the respective filtering step, we excluded 407 patients (4% of the sample) with an AD diagnosis before MCI on the timeline. While the magnitude of this issue is relatively small, it represents an important limitation inherent to this type of data. This particular issue may stem not solely from using EHRs but also from the subjective nature of clinical AD diagnosis. Nevertheless, the uncertainty surrounding a patient's status, as evidenced by conflicting diagnoses, necessitates the removal of such cases from a potential dataset for analysis.
+
+Overall, these findings underscore the challenge of balancing the richness of EHR data with the need for precise representation of real-world clinical scenarios. Tightening criteria for data analysis can substantially diminish available data, impacting the study's ability to capture population progression patterns effectively. While EHRs appear as a rich source of data, they are not robust against the complexities of clinical diagnosis of highly subjective conditions. 
+
+### Cohort Summaries 
+
+@tbl-cohort-sum compares key statistics across the three cohorts. Similarities exist for all summarized measures outside sample sizes and event rates. On average, these are older populations. Age variances appear approximately equal between cohorts. Duration to progression and ages at progression also signify similarities. Furthermore, ages at progression imply relatively older individuals within these cohorts exhibit increased likelihoods of progressing.
+
+As later cohort versions require increased time lags between initial and final MCI or Unspecified diagnoses, this likely explains observed increases in average diagnosis counts for later versions. Cohorts A and C differ in progression rates and observation windows post-final diagnosis. Cohort C demonstrates a slightly elevated progression rate, but also a lengthier window following the final MCI diagnosis, permitting capture of additional progression events.
+
+\renewcommand{\arraystretch}{2}
+```{r}
+#| label: tbl-cohort-sum
+#| tbl-cap: "Comparison of statistics for the three cohrots"
+#| 
+
+cohorts <- read_csv("./Export Figures/All Cohort Summary.csv") %>%
+  select(`...1`, V4, V5, V6) %>% 
+  filter(`...1` != "% Aged Below 50 At Start") %>% 
+  mutate(`...1` = case_when(`...1` == "Avg. UMD Diags." ~ "Avg. UMD Diags. (SD)", 
+                            `...1` == "Avg. AD Diags." ~ "Avg. AD Diags. (SD)", 
+                            `...1` == "Avg. AD Diags." ~ "Avg. AD Diags. (SD)", 
+                            `...1` == "Avg. Age at Start" ~ "Avg. Age at Start (SD)", 
+                            `...1` == "Avg. Age at Progression" ~ "Avg. Age at Progression (SD)", 
+                            `...1` == "Avg. Years to Progression" ~ "Avg. Years to Progression (SD)", 
+                            T ~ `...1`
+                            )
+         )
+
+cohorts %>% 
+  kable(booktabs = T, 
+        align = c('l', 'c', 'c', 'c'), 
+        col.names = c(" ", "Cohort A", "Cohort B", "Cohort C")
+        ) %>% 
+  kable_styling(latex_options = "hold_position") %>% 
+  add_footnote("Avg. Years to Progression is estiamted for those who progressed to AD withing observed time")
+```
+\renewcommand{\arraystretch}{1}
+
+@fig-ages presents the distribution of age for the three cohorts at the time of initial MCI diagnosis. Imposing a criterion of having at least two MCI diagnoses over a minimum 50-day window significantly alters the population from which a study sample is derived. As discussed previously, MCI and UMD diagnoses differ in nature. Unspecified diagnosis can serve as a 'catch-all' diagnosis, leading to younger patients being more likely diagnosed with the 'Unspecified' ICD-10 code.
+
+```{r, align = 'center' ,out.width='100%', out.height='100%', fig.height=10}
+#| label: fig-ages 
+#| fig-cap: "Distribtuion of age at start of observations stratified by Type of Anchor Event."
+
+
+knitr::include_graphics("./Export Figures/Age by Outcome.png")
+```
+
+### Kaplan Meier Curves 
+
+The subsequent essential step in preliminary data analysis involves examining the Kaplan-Meier survival curves. Similar to @fig-ages, the first diagnosis, whether MCI or Unspecified Mental Disorder, acts as a stratifying variable assessing differences in time-to-event distribution between the two groups, as depicted in @fig-diag-KM for all three cohorts.
+
+Immediately noticeable are patterns across cohorts akin to conclusions drawn from age distribution analysis. Cohort A demonstrates highly similar age distributions between MCI and UMD first diagnosis groups. It's expected that age emerges as a potent predictor of MCI to AD progression. Since age distributions visually appear similar across the two groups, observed differences in age distribution translate similarly into differences in time-to-AD progression estimates.
+
+Significantly, Cohorts A and C exhibit quite comparable overall progression rates in the samples, likely due to similar overall progression rates in the data. However, the difference in the MCI/Unspecified subgroup becomes more apparent. Within the first 7-9 years of follow-up, Cohorts A and C appear overall indistinguishable, yet the scenario changes considerably when stratifying by the initial, or anchor, diagnosis. This crucial differentiation, coupled with largely disparate age distributions, suggests that while cohorts may seem similar on paper, the two sub-populations comprising the overall cohort differ significantly. The unadjusted progression disparities between groups with varying initial diagnosis severity imply that imposing stricter criteria to identify EHR patients with more confirmatory MCI onset yields a population heavily stratified by inherent AD progression risk. While reducing sample size and potentially limiting statistical power, having such a sample where progression rates substantially differ based on initial diagnosis and age may facilitate statistical analyses with inference as the primary goal.
+
+```{r, align = 'center' ,out.width='75%', out.height='75%'}
+#| label: fig-all-KM
+#| fig-cap: "Cohort specific survival curves. Cohort B appers drastically different."
+
+
+knitr::include_graphics("./Export Figures/SUrvival Whole Cohort.png")
+```
+
+```{r, align = 'center' ,out.width='100%', out.height='100%', fig.height=10}
+#| label: fig-diag-KM
+#| fig-cap: "Association between the type of anchor event and likelihood of progression. Those with UMD as the first diagnosis are less likely to progress to AD in cohorts B abd C."
+
+
+knitr::include_graphics("./Export Figures/SUrvival By FIrst Diag.png")
+```
+
+It is imperative to analyze the time-to-AD progression distribution across age groups since the three potential study cohorts varied in overall age distribution, as depicted in @fig-all-KM and @fig-surv-ages. All cohorts present an expected trend: older age groups demonstrate higher progression rates, a consistent conclusion across the three cohorts. Interestingly, there seems to be no additional age effect once participants enter the 71 and older group. It is plausible that the aging process had already predominantly occurred, with patients in the 71+ age group being quite homogeneous in terms of physical and mental health. While event rates decrease for the oldest study participants, this is likely attributed to censoring induced by death events, albeit an unverified speculative assumption from the EHR data.
+
+It is pertinent to reiterate the similarities between Cohorts A and C. Despite the differences in age distribution concerning the initial diagnosis and progression rates to AD when stratified by the initial diagnosis, the age effect on progression time does not seem to differ between the two groups when not considering other progression predictors. This absence of variation in progression time by age group suggests a reassuring resemblance between the populations representing Cohorts A and C.
+
+```{r, align = 'center' ,out.width='100%', out.height='100%', fig.height=10}
+#| label: fig-surv-ages 
+#| fig-cap: "Association between initial age and likelihood of progression"
+
+
+knitr::include_graphics("./Export Figures/SUrvival By Age.png")
+```
+
+### Regression Estimates 
+
+@tbl-cox-res presents estimates from Cox Proportional Hazard regression models applied to the three cohorts utilizing the same set of predictors. Due to the large sample size and the straightforward nature of the model, all estimates are statistically significant. Nevertheless, the results of the three models exhibit significant variations.
+
+The primary finding underscores the significance of the first diagnosis observation as a robust predictor of progression to AD. Across all cohorts, the occurrence of MCI as the first diagnosis increases the log-hazard (and hazard) of an AD event after adjusting for other factors. However, the magnitude of this effect varies considerably depending on the cohort. Cohorts with stricter inclusion criteria demonstrate a greater impact of the initial diagnosis on the log-hazard of AD events.
+
+@tbl-cox-res also provides insights into the effect of age. For patients whose first diagnosis was UMD, the effect of age remains consistent across all three cohorts. Each additional year of age at baseline is statistically associated with the progression to AD. However, in cohorts with stricter patient inclusion criteria, the effect of age at baseline on the log-hazard diminishes for those with MCI as the first diagnosis.
+
+\renewcommand{\arraystretch}{2}
+```{r}
+#| label: tbl-cox-res
+#| tbl-cap: "Comparison of statistics for the three cohrots"
+
+
+ests <- read_csv("./Export Figures/Cox Model Results.csv") %>%
+  select(-`...1`) %>% 
+  {colnames(. ) <- c("term", "est1", "se1", "p1", 
+                            "est2", "se2", "p2", 
+                     "est3", "se3", "p3"); . } %>% 
+  mutate(
+    ci1 = paste0("(", 
+                 round(est1 - 1.96 * se1, 2), ", ", 
+                 round(est1 + 1.96 * se1, 2), 
+                 ")"),
+    
+    ci2 = paste0("(", 
+                 round(est2 - 1.96 * se2, 2), ", ", 
+                 round(est2 + 1.96 * se2, 2), 
+                 ")"),
+    
+    ci3 = paste0("(", 
+                 round(est3 - 1.96 * se3, 2), ", ", 
+                 round(est3 + 1.96 * se3, 2), 
+                 ")")
+  ) %>% 
+  
+  mutate(p1_f = ifelse(p1 < 0.001, "< 0.001", as.character(round(p1, 3))),
+         p2_f = ifelse(p2 < 0.001, "< 0.001", as.character(round(p2, 3))),
+         p3_f = ifelse(p3 < 0.001, "< 0.001", as.character(round(p3, 3)))
+         ) %>% 
+  select(term, 
+         est1, ci1, p1_f,
+         est2, ci2, p2_f,
+         est3, ci3, p3_f
+         )  
+  
+
+ests %>% 
+  kable(booktabs = T, 
+        digits = 2, 
+        align = c('l', rep('c', (length(.)-1 )
+                           )
+                  ), 
+        col.names = c("Predictor", 
+                      "Log-HR", "95% C.I.", "P-value",
+                      "Log-HR", "95% C.I.", "P-value",
+                      "Log-HR", "95% C.I.", "P-value")
+        ) %>% 
+  add_header_above(c( " " = 1, "Cohort A" = 3, "Cohort B" = 3, "Cohort C" = 3)) %>% 
+  column_spec(1, width = "2cm") %>% 
+  column_spec(c(2, 5, 8), width = "1cm") %>% 
+  add_footnote("'First Diag. MCI' is Compared to 'First Diag. is UMD' reference level") %>% 
+  kable_styling(latex_options = "hold_position")
+
+```
+\renewcommand{\arraystretch}{1}
+
+
+Significant disparities in the first diagnosis effects observed among the cohorts indicate underlying cohort-specific characteristics modulating the relationship between predictors and progression events. These findings offer insights into unique factors or sub populations represented by each cohort, guiding cohort selection for specific statistical tasks or modeling objectives.
+
+# Discussion 
+
+Throughout the exploratory analysis and inference using Cox Proportional Hazard Models, we have observed that overall progression, progression by subgroups, and rates of progression within subgroups can heavily depend on the cohort inclusion criteria. The rationale for including stricter criteria is to ensure that patients entering the study have onset MCI with higher confidence before potential AD progression, rather than an MCI or UMD diagnosis recorded in the EHR due to other reasons or faulty initial diagnosis. This latter scenario is more applicable to the MCI ICD diagnosis, while UMD diagnoses carry a higher risk of relating not to potential MCI presence itself, but to other mental issues patients experience. Given the lack of transparency and clinical notes in the EHR, it is imperative to ensure that selected patients represent the general population, allowing inferences about the entire population based on the observed patient subset.
+
+Numerous studies utilize EHR data to forecast or predict AD presence after or within a certain period, or to identify factors associated with AD progression. These studies' results are used as general clinical practice advice, with authors advocating for various statistical models' use in practice. However, as discussed earlier, visit records, notes, code usage, and other data demonstrate homogeneity within a health system and database to a degree, but these data structures differ between independent EHR databases. Our study reveals that even within the same EHR database, using reasonable steps to limit the available population to obtain overall progression rate, progression rate by age-subgroup, and initial diagnosis as stratifying variables produces drastically different effects. This implies that patient inclusion criteria have an immense effect on the population makeup and, therefore, a strong effect on the type and quality of knowledge inferred from such samples.
+
+The issues discussed appear specific to how AD, especially MCI, is clinically diagnosed. For example, @lombardi2020structural meta-analysis shows that MRI alone lacks accuracy in early diagnosing Alzheimer's disease dementia in individuals with MCI, with a high rate of misdiagnosis observed. They also discuss other challenges associated with the diagnoses of MCI and AD. @aslam2018systematic also alludes that certain tests display potential in detecting MCI and early dementia; however, issues such as small sample sizes, study replicability, and insufficient evidence hinder making clinical recommendations on their use for diagnosis, progression monitoring, and treatment response. Further research is essential to establish consistent cutoff points for automated computerized tests in diagnosing individuals with MCI or early dementia. While diabetes, hypertension, and cardiovascular conditions can be identified using established clinical measurements and biomarker levels, AD and MCI diagnosis is a more subjective process. Moreover, repeated measures need administration for the same patient to guarantee accurate data collection and allow averaging to address random variance associated with one observation for the three major comorbidity types. AD and MCI diagnosis subjectivity on a given day is an even greater issue. Currently, for most patients, Mini-Mental State Examination (MMSE) or Montreal Cognitive Assessment (MoCA) serve as screening tools. While highly developed and well-established, they remain prone to how a patient feels on a given day. Since MCI is a diagnosis for memory issues, there is no objective, consistent way to measure memory impairment degree. Moreover, like any clinical tool relying on a scale, a certain cutoff must be taken to justify further medical attention. If a patient falls just short, they might receive a UMD, or 'Unspecified Mental Disorder', diagnosis instead of further screening and MCI diagnosis, heavily affecting the clinical trajectory and observed EHR data. Additional AD diagnosis methods include imaging, scans, and other physician-evaluated methods, introducing more room for error. @beach2012accuracy evaluated neuropathologic examination from the point of view of AD diagnosis. They analyzed 919 subjects from the Uniform Data Set (UDS) from the National Alzheimer's Coordinating Center, finding sensitivity of clinical diagnoses ranging from 70.9% to 87.3%, based on different levels of neuropathologic confidence and AD diagnostic criteria. 
+
+Regarding repeated measurements for patients, it is common for suspected AD patients to be seen at three-to-six-month intervals for re-evaluation. This seems a large enough time where patient follow-up can be lost. In the EHR data analysis context, we can lose patients to different EHR databases where they receive follow-up and repeated diagnosis data we do not observe. These issues require careful thoughtfulness about which patients are selected for the study and the population being studied. Moreover, missing cognitive assessment in the EHR data is a big challenge. @missing_mental found that a minority of dementia patients (11%) and Alzheimer's disease (AD) patients (24%) had recorded cognitive assessments within the five years preceding diagnosis. Factors linked to the absence of cognitive measures included Black race, older age, non-commercial health insurance, lower neighborhood income, increased in-patient stays, and fewer out-patient visits.
+
+### Key Takeaway 
+
+Considering the insights gained from analyzing Cohorts A and C, excluding Cohort 5 momentarily, the primary aggregated metrics depicted in @tbl-cohort-sum exhibit remarkable similarity. Notably, the progression rate, defined as the observed progressions among cohort patients, appears strikingly alike across both cohorts. Upon examining the Kaplan-Meier survival curves, it becomes evident that the two cohorts boast nearly indistinguishable curves, particularly within the initial seven-year period where the bulk of the data lies. Additionally, both cohorts demonstrate similar trends in progression rates when stratified by age groups, with each cohort showing a heightened age effect on progression rates initially, tapering off around the age of 70.
+
+However, a pertinent question arises: why does the impact of the first diagnosis differ significantly when comparing Cohorts A and C? The application of a more restrictive criteria mandating at least two MCI (MCI or UMD) diagnoses results in a cohort necessitating follow-up after the initial diagnosis. Subsequent diagnoses confirm the presence of MCI or some unspecified mental condition. Individuals initially diagnosed with a UMD condition are likely at a lower risk of progression, presumably due to their better overall health status, hence receiving that diagnosis initially. Yet, why does the impact of the MCI first diagnosis appear much greater compared to the UMD diagnosis in Cohort C? It is plausible that observations from the EHR lack credibility and fail to accurately capture the development of mental issues and the comprehensive medical history. In Cohort A, individuals progressing to AD are permitted to have one MCI diagnosis. It is probable that this diagnosis is captured incidentally or that there was a scheduled follow-up appointment, but the individuals either did not attend or MCI was not documented during that appointment. By requiring at least two total diagnoses, not solely MCI-related as in Cohort C, those progressing may only have one MCI-related diagnosis. This single diagnosis introduces more randomness and sporadic observations, thereby diluting the differences in progression between individuals with different initial diagnoses. Although Cohorts A and C exhibit similar overall progression rates consistent with accepted MCI to AD progression rates, they comprise distinct population compositions, potentially yielding different analytical outcomes.
+
+To recapitulate, while patients in Cohort C are more assuredly confirmed onset MCI cases, an initial UMD diagnosis implies that physicians may have perceived less concrete evidence of MCI during the initial evaluation, perhaps due to the overall healthier status of the patients. This speculation is corroborated by a Cox proportional hazards regression coefficient. Consequently, we may have assembled a study cohort that, by design, segregates individuals with better health, less likely to progress, from those with poorer mental states at the initial diagnosis, who are more inclined to progress to AD from MCI/UMD mental diagnoses.
+
+### Reflections 
+
+The initial consideration revolves around sample size. Adhering to Cohort A's criteria permits the inclusion of a larger number of patients, potentially diversifying the types of patients present and offering data more reflective of the entire populace. An argument can be made that such an approach might be more suitable for machine learning tasks utilizing complex models that require ample data samples to discern non-trivial relationships.
+
+Although we discussed the possibility of having a single UMD prior to AD progression, signifying a sporadic occurrence, and potentially enrolling someone into the cohort who may not represent likely progressing patients, this conclusion remains ambiguous from the data alone.
+Additionally, the use of Cohort A for developing predictive models not only maximized the sample size while maintaining consistency with main summary statistics used in other studies and accepted medical standards but also allowed for the application of the model to a larger subset of the general population at risk of progression. If algorithms are developed based on criteria similar to Cohort C, prediction would require patients to have two diagnoses of MCI or UMD, enabling progression predictions on a smaller subset of the at-risk population.
+Moreover, applying a model developed on Cohort C to the entire EHR database may involve extrapolation, as individuals with two MCI diagnoses in the database could have fundamentally different risk profiles and progression trajectories compared to patients without such diagnoses or those who qualify for model-based risk assessment based solely on age and other accepted epidemiological standards for AD screening.
+
+When talking about the applicability of EHR data sources for identification of individuals at risk of progression from MCI to AD, we need to carefully consider implications of the use of such data. The increased use of information technologies in healthcare, driven by regulations like the 21st Century Cures Act, allows broader access to personal health information (PHI) through EHRs, including sensitive data related to preclinical Alzheimer's disease. However, @gale2022preclinical raise concerns about privacy and potential disclosure risks. Individuals with preclinical AD, characterized by AD biomarkers before symptoms appear, face personal harms such as stigma if this information is disclosed without consent. While preclinical AD is mainly identified in research settings currently, consensus criteria for clinical diagnosis may soon be established, underscoring the need for legal protections and ethical guidelines to safeguard PHI and facilitate responsible disclosure in healthcare settings. Ongoing efforts in the AD research community are vital to ensure participant confidentiality and promote ethical practices in handling sensitive PHI related to preclinical AD within EHRs and clinical care.
+
+Our suggestion would be to employ Cohort A when undertaking predictive model development, as this cohort maximizes the total sample size and applicability of the developed to the at-risk population model while maintaining overall statistics resembling a commonly referenced population when assessing MCI to AD progression.
+
+Conversely, Cohort C could be more suitable for inference studies aimed at identifying factors associated with MCI to AD progression events. This assertion arises because Cohort C is structured in such a way that included individuals require at least two MCI diagnoses over a certain time frame (at least 50 days in our study). Having individuals more likely to actually undergo an anchor MCI event enhances credibility and confidence that Cohort C's criteria identifies genuinely onset MCI patients. These observations can be treated as representative of the entire MCI population. Therefore, analyzing progression rates and factors associated with progression events/times using a Cohort C-like sample appears more likely to yield marginal effect estimates covering true population effects.
+
+Up to this point, Cohort 5 has been largely disregarded due to summary statistics. In reality, inclusion occurred as an illustration of potentially poor practices or manipulation of numbers in favor of the study conductor. By tightening non-AD event inclusion criteria but encompassing all AD events even with a single MCI diagnosis, one advantageous power increase emerges, with a higher chance of discovering novel factors delineating the prognosis of AD progression events. However, this comes with a cost and a decision that may be challenging to justify. On the surface, Cohort 5 seems akin to Cohorts A and C, with age summary statistics, observation times, and specific diagnosis distributions not deviating significantly and aligning with overall understandings of onset MCI and AD progression risk populations. However, due to the 'hybrid' criteria, the overall progression rate appears excessively high, as reality indicates much lower rates, making it improbable to observe a 26% progression rate in a random sample when the true population rate is 15%.
+
+This cohort illustrates how applying criteria to a portion of a sample can drastically alter the population the sample is intended to represent, potentially rendering the sample unrepresentative of any population. Our regression model estimate supports this argument, as the coefficient for the increased log-hazard associated with MCI being the first diagnosis falls between Cohorts A and C.
+
+```{r, eval = F}
+
+N = 100000
+
+plot_d <- 
+  data.frame(
+    x = c(
+      rnorm(n = N, mean = 1.43, sd = 0.556), 
+      rnorm(n = N, mean = 2.94, sd = 0.596), 
+      rnorm(n = N, mean = 3.69, sd = 0.794)
+    ), 
+    type = c(
+      rep("Cohort 4", N), 
+      rep("Cohort 5", N), 
+      rep("Cohort 6", N)
+    )
+  )
+
+ggplot(data = plot_d, 
+       aes(x = x, group = type, color = type)
+       ) + 
+  theme_classic() + 
+  geom_density()
+```
+
+### Further Questions 
+
+An intriguing aspect emerges from our analysis regarding the sequencing of initial diagnoses as a stratifying variable: why confine ourselves solely to the first diagnosis? Could we not leverage all diagnoses encountered along the patient journey, using them as the most recent accumulated information to gauge the risk of transitioning to AD at subsequent observations or within a specified time frame? This proposition aligns with our earlier discussions throughout this paper.
+
+Consider the notion that an UMD diagnosis might be assigned when the presence of MCI isn't definitively clear, but indications of mental disturbances and memory issues are documented. In such cases, we can infer a lower confidence level regarding the likelihood of imminent progression to AD following an observation. However, what if a patient accrues multiple such diagnoses before transitioning to a diagnosis of MCI? It stands to reason that such individuals are at a heightened risk of AD progression, given the accumulation of systematically documented issues. Moreover, will it be reasonable to argue that a patient who incurs two UMD diagnoses followed by an MCI diagnosis is at a lower risk of progression compared to a person who incurs three MCI diagnoses in a shorter period of time? This work can be supplemental to @great_auc study of progression risks within 0-5 year windows of observation. They showed that using machine learning methods applied to health history and comorbidities data it is possible to achieve accurate prediction of progression, supported by AUC of 0.9 for 0-year progression predictor, with AUC declining to about 0.84 for the 5-year progression. While these results seem optimistic, perhaps, inclusion of early patterns of UMD and MCI diagnoses from EHR could help to improve on these results. 
+
+The application of Markov chain models and G-computation approaches, commonly employed in causal inference, could provide valuable insights into analyzing such data and addressing the questions we pose in this section. These models and analysis frameworks facilitate the examination of observations over time, enabling the statistical evaluation of relationships between discrete time points and transitions from one state to another. 
+
+@INPROCEEDINGS proposed using Hidden Markov Models (HMMs) to enhance the assessment of disease progression in slowly progressing diseases like Alzheimer's disease (AD). Unlike traditional clinical stages, which progress too slowly for quick treatment evaluation, HMMs offer a more detailed and unsupervised approach to model disease progression. They demonstrated the effectiveness of this approach in identifying finer disease stages beyond the standard three clinical stages of “Normal”, “MCI” (Mild Cognitive Impairment), and “AD” through cross-validation data analysis. 
+
+Of course, the successful implementation of these approaches necessitates not only a sizable dataset with a sufficient number of patients to discern complex patterns but also a robust set of predictors to enable accurate personalized predictions.
+
+# Summary 
+
+The present study aimed to explore and critically examine the methodologies employed in studying the progression from mild cognitive impairment (MCI) to Alzheimer's disease (AD) using electronic health records (EHRs). With the advent of EHRs revolutionizing the landscape of medical research by providing longitudinal patient data, we sought to delineate diverse cohorts mirroring common criteria observed in recent publications. Our goal was to assess the implications of restructuring cohort criteria on sample size, overall statistics, and the degree to which the represented sample aligns with commonly accepted statistics regarding MCI to AD progression.
+
+We analyzed data from the Fairview Health System Data Warehouse, comprising records of patient visits with diagnoses of MCI, AD, or UMD mental disorders. Three distinct cohorts were defined based on varying inclusion criteria, such as age restrictions, time between diagnoses, and the presence of confirmed MCI diagnoses across multiple visits.
+
+Our analysis revealed that cohort inclusion criteria significantly impact the sample size, overall progression rates from MCI to AD, and the effect of key predictors like age and initial diagnosis type on disease progression. Notably, imposing stricter criteria to confirm MCI onset yielded a cohort heavily stratified by inherent AD progression risk, albeit with a reduced sample size.
+
+We highlighted the subjectivity and challenges associated with MCI and AD diagnosis in clinical settings, which can introduce inconsistencies and incompleteness in EHR data capture. This underscores the importance of carefully considering patient inclusion criteria to ensure that the selected sample accurately represents the general population, thereby allowing for reliable inferences and recommendations.
+
+Based on our findings, we provide recommendations for utilizing different cohort definitions based on the research objective. Cohort A, with less stringent criteria, may be more suitable for machine learning tasks requiring larger sample sizes. In contrast, Cohort C, with stricter criteria for confirming MCI onset, could be more appropriate for inference studies aimed at identifying factors associated with MCI to AD progression events.
+
+In summary, this study underscores the significant impact of cohort selection criteria on the quality and generalizability of findings derived from EHR data when studying MCI and AD progression. Our work highlights the importance of carefully evaluating and reporting cohort definitions to ensure the validity and applicability of research outcomes in this field.
+
+
+\newpage 
+
+# References
+
+<div id="refs"></div>
+
+\newpage 
+
+# Appendix
+
+\renewcommand{\arraystretch}{1.5}
+```{R}
+#| label: tbl-diags-used
+#| tbl-cap: "Diagnoses from EHR"
+
+
+read_csv("diagnoses.csv")[,-1] %>% 
+  kable(col.names = c("ICD Code", "Version", "Description"),
+        align = c('c', 'c', 'l'), 
+        longtable = T)
+
+
+```
+\renewcommand{\arraystretch}{1}
